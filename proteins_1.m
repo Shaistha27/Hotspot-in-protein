@@ -1,6 +1,7 @@
 clc;
 close all;
 clear all;
+
 % Define the EIIP values for each amino acid
 EIIP_VALUES = containers.Map( ...
     {'A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V'}, ...
@@ -30,38 +31,85 @@ end
 % Set maximum period for RFT computation
 max_period = 50;
 
-%ramanujan sum
-function cq =  ramanujan_sum(q,n);
-cq=0;
-for k=1:q
-   if gcd(k,q)==1;
-   cq = cq + exp ( i * 2 * pi * k * n / q );
-      end
+% Ramanujan sum
+function cq = ramanujan_sum(q, n)
+    cq = 0;
+    for k = 1:q
+        if gcd(k, q) == 1
+            cq = cq + exp(i * 2 * pi * k * n / q);
+        end
     end
-  end
-
-% ramanujan fourier transform coefficient
-function rft_result = rft(signal, max_period)
-    rft_result = zeros(1, max_period);
-for q = 1:max_period
-  phi_q = numel(find(gcd(1:q, q) == 1)); % Compute phi(q)
-   xq = 0;
-for n = 1:length(signal)
-   xq = xq + signal(n) * ramanujan_sum(q, n);  % Accumulate sum
-    end
-    xq = (1 / phi_q) * xq;
-    rft_result(q) = abs(xq);
- end
 end
 
-rft_result1 = rft(eiip_sequence1,50);
-rft_result2 = rft(eiip_sequence2,50);
+% Ramanujan Fourier Transform coefficient
+function rft_result = rft(signal, max_period)
+    rft_result = zeros(1, max_period);
+    for q = 1:max_period
+        phi_q = numel(find(gcd(1:q, q) == 1)); % Compute phi(q)
+        xq = 0;
+        for n = 1:length(signal)
+            xq = xq + signal(n) * ramanujan_sum(q, n);  % Accumulate sum
+        end
+        xq = (1 / phi_q) * xq;
+        rft_result(q) = abs(xq);
+    end
+end
 
+% Compute RFT results for both sequences
+rft_result1 = rft(eiip_sequence1, 50);
+rft_result2 = rft(eiip_sequence2, 50);
+
+% Plot the RFT result for the first sequence
 figure;
 plot(1:50, rft_result1, 'r', 'LineWidth', 1.5);
-title('rft result1');
+hold on;
+
+% Find the characteristic periods by detecting peaks
+[~, locs1] = findpeaks(rft_result1); % Get the indices of the peaks
+
+% Highlight the peaks on the plot
+plot(locs1, rft_result1(locs1), 'bo', 'MarkerFaceColor', 'b'); % Plot peaks as blue dots
+
+% Add titles, labels, and grid
+title('RFT Result 1 with Characteristic Periods');
 xlabel('Period');
 ylabel('Magnitude');
 grid on;
 
+% Optional: Add vertical lines at the characteristic periods
+for i = 1:length(locs1)
+    xline(locs1(i), '--k'); % Dashed black lines at peak locations
+end
+
+% Set yticks
 yticks(1:3);
+
+hold off;
+
+% Plot the RFT result for the second sequence
+figure;
+plot(1:50, rft_result2, 'g', 'LineWidth', 1.5);
+hold on;
+
+% Find the characteristic periods by detecting peaks
+[~, locs2] = findpeaks(rft_result2); % Get the indices of the peaks
+
+% Highlight the peaks on the plot
+plot(locs2, rft_result2(locs2), 'bo', 'MarkerFaceColor', 'b'); % Plot peaks as blue dots
+
+% Add titles, labels, and grid
+title('RFT Result 2 with Characteristic Periods');
+xlabel('Period');
+ylabel('Magnitude');
+grid on;
+
+% Optional: Add vertical lines at the characteristic periods
+for i = 1:length(locs2)
+    xline(locs2(i), '--k'); % Dashed black lines at peak locations
+end
+
+% Set yticks
+yticks(1:3);
+
+hold off;
+

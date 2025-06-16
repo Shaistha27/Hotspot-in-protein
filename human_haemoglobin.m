@@ -8,12 +8,14 @@ EIIP_VALUES = containers.Map( ...
      0.0000, 0.0823, 0.0829, 0.0946, 0.0198, 0.0829, 0.0941, 0.0548, 0.0516, 0.0057]);
 
 % Input two protein sequences
-sequence1 = 'MATGSRTSLLLAFGLLCLPWLQEGSAFPTIPLSRLFDNAMLRAHRLHQLAFDTYQEFEEAYIPKEQKYSFLQNPQTSLCFSESIPTPSNREETQQKSNLELLRISLLLIQSWLEPVQFLRSVFANSLVYGASDSNVYDLLKDLEEGIQTLMGRLEDGSPRTGQIFKQTYSKFDTNSHNDDALLKNYGLLYCFRKDMDKVETFLRIVQCRSVEGSCGF'; % human growth hemoglobin
-sequence2 = 'MDLWQLLLTLALAGSSDAFSGSEATAAILSRAPWSLQSVNPGLKTNSSKEPKFTKCRSPERETFSCHWTDEVHHGTKNLGPIQLFYTRRNTQEWTQEWKECPDYVSAGENSCYFNSSFTSIWIPYCIKLTSNGGTVDEKCFSVDEIVQPDPPIALNWTLLNVSLTGIHADIQVRWEAPRNADIQKGWMVLEYELQYKEVNETKWKMMDPILTTSVPVYSLKVDKEYEVRVRSKQRNSGNYGEFSEVLYVTLPQMSQFTCEEDFYFPWLLIIIFGIFGLTVMLFVFLFSKQQRIKMLILPPVPVPKIKGIDPDLLKEGKLEEVNTILAIHDSYKPEFHSDDSWVEFIELDIDEPDEKTEESDTDRLLSSDHEKSHSNLGVKDGDSGRTSCCEPDILETDFNANDIHEGTSEVAQPQRLKGEADLLCLDQKNQNNSPYHDACPATQQPSVIQAEKNKPQPLPTEGAESTHQAAHIQLSNPSSLSNIDFYAQVSDITPAGSVVLSPGQKNKAGMSQCDMHPEMVSLCQENFLMDNAYFCEADAKKCIPVAPHIKVESHIQPSLNQEDIYITTESLTTAAGRPGTGEHVPGSEMPVPDYTSIHIVQSPQGLILNATALPLPDKEFLSSCGYVSTDQLNKIMP'; % human growth hemoglobin
+sequence1 = 'MSGGDGRGHNTGAHSTSGNINGGPTGIGVSGGASDGSGWSSENNPWGGGSGSGIHWGGGSGRGNGGGNGNSGGGSGTGGNLSAVAAPVAFGFPALSTPGAGGLAVSISASELSAAIAGIIAKLKKVNLKFTPFGVVLSSLIPSEIAKDDPNMMSKIVTSLPADDITESPVSSLPLDKATVNVNVRVVDDVKDERQNISVVSGVPMSVPVVDAKPTERPGVFTASIPGAPVLNISVNDSTPAVQTLSPGVTNNTDKDVRPAGFTQGGNTRDAVIRFPKDSGHNAVYVSVSDVLSPDQVKQRQDEENRRQQEWDATHPVEAAERNYERARAELNQANEDVARNQERQAKAVQVYNSRKSELDAANKTLADAIAEIKQFNRFAHDPMAGGHRMWQMAGLKAQRAQTDVNNKQAAFDAAAKEKSDADAALSAAQERRKQKENKEKDAKDKLDKESKRNKPGKATGKGKPVGDKWLDDAGKDSGAPIPDRIADKLRDKEFKSFDDFRKAVWEEVSKDPELSKNLNPSNKSSVSKGYSPFTPKNQQVGGRKVYELHHDKPISQGGEVYDMDNIRVTTPKRHIDIHRGK'; % im9
+sequence2 = 'MSGGDGRGHNTGAHSTSGNINGGPTGLGVGGGASDGSGWSSENNPWGGGSGSGIHWGGGSGHGNGGGNGNSGGGSGTGGNLSAVAAPVAFGFPALSTPGAGGLAVSISAGALSAAIADIMAALKGPFKFGLWGVALYGVLPSQIAKDDPNMMSKIVTSLPADDITESPVSSLPLDKATVNVNVRVVDDVKDERQNISVVSGVPMSVPVVDAKPTERPGVFTASIPGAPVLNISVNNSTPEVQTLSPGVTNNTDKDVRPAGFTQGGNTRDAVIRFPKDSGHNAVYVSVSDVLSPDQVKQRQDEENRRQQEWDATHPVEAAERNYERARAELNQANEDVARNQERQAKAVQVYNSRKSELDAANKTLADAIAEIKQFNRFAHDPMAGGHRMWQMAGLKAQRAQTDVNNKQAAFDAAAKEKSDADAALSAAQERRKQKENKEKDAKDKLDKESKRNKPGKATGKGKPVGDKWLDDAGKDSGAPIPDRIADKLRDKEFKNFDDFRKKFWEEVSKDPDLSKQFKGSNKTNIQKGKAPFARKKDQVGGRERFELHHDKPISQDGGVYDMNNIRVTTPKRHIDIHRGK'; % imnine
+
 
 % Convert both sequences to EIIP values
 eiip_sequence1 = zeros(1, length(sequence1));  % Preallocate array for sequence1
 eiip_sequence2 = zeros(1, length(sequence2));  % Preallocate array for sequence2
+
 
 % Loop over the first sequence
 for i = 1:length(sequence1)
@@ -27,13 +29,16 @@ for i = 1:length(sequence2)
     eiip_sequence2(i) = EIIP_VALUES(aa);  % Get the corresponding EIIP value
 end
 
+
+
 % Pad the sequences to the same length
 max_len = max(length(eiip_sequence1), length(eiip_sequence2));  % Get the maximum length
 eiip_sequence1 = [eiip_sequence1, zeros(1, max_len - length(eiip_sequence1))];  % Pad sequence1
 eiip_sequence2 = [eiip_sequence2, zeros(1, max_len - length(eiip_sequence2))];  % Pad sequence2
 
+
 % Set maximum period for RFT computation
-max_period = 150;
+max_period = 60;
 
 %ramanujan sum
 function cq =  ramanujan_sum(q,n);
@@ -61,6 +66,7 @@ end
 
 rft_result1 = rft(eiip_sequence1,max_period);
 rft_result2 = rft(eiip_sequence2,max_period);
+
 
 Pq = abs(rft_result1 .* rft_result2);
 
@@ -134,96 +140,123 @@ ST_RFT = compute_ST_RFT(Pq, max_period);
 CM = compute_CM(ST_RFT, 8);
 
 
+
 figure;
 plot(1:max_period, rft_result1, 'k', 'LineWidth', 1.5);
-title('rft result1');
-xlabel('Period');
-ylabel('Magnitude');
+
+title('rft result1', 'FontSize', 17);
+xlabel('Period', 'FontSize', 16);
+ylabel('Magnitude', 'FontSize', 16);
 grid on;
 
 % Zoom in (adjust the y-axis limits)
-axis([0 150 0 5]);  % X-axis from 0 to 10, Y-axis from -1 to 1
+axis([0 max_period 0 1]);  % X-axis from 0 to 10, Y-axis from -1 to 1
 
-yticks(0:0.1:5);
-xticks(0:1:150);
+yticks(0:0.1:1);
+xticks(0:1:max_period);
+
 
 figure;
 plot(1:max_period, rft_result2, 'k', 'LineWidth', 1.5);
-title('rft result2');
-xlabel('Period');
-ylabel('Magnitude');
+
+title('rft result2', 'FontSize', 17);
+xlabel('Period', 'FontSize', 16);
+ylabel('Magnitude', 'FontSize', 16);
 grid on;
 
 % Zoom in (adjust the y-axis limits)
-axis([0 150 0 5]);  % X-axis from 0 to 10, Y-axis from -1 to 1
+axis([0 max_period 0 1]);  % X-axis from 0 to 10, Y-axis from -1 to 1
 
-yticks(0:0.1:5);
-xticks(0:1:150);
+yticks(0:0.1:1);
+xticks(0:1:max_period);
+
 
 figure;
 plot(1:max_period, Pq, 'k', 'LineWidth', 1.5);
 hold on;
 plot([0, max_period], [threshold, threshold], 'r'); % Plot horizontal line at y = threshold
-title('cross correlation');
-xlabel('Period');
-ylabel('Magnitude');
+
+
+
+xlabel('Period', 'FontSize', 16);
+ylabel('Magnitude', 'FontSize', 16);
+title('Cross Correlation', 'FontSize', 17);
 grid on;
 
 % Zoom in (adjust the y-axis limits)
-axis([0 150 0 5]);  % X-axis from 0 to 10, Y-axis from -1 to 1
+axis([0 max_period 0 1]);  % X-axis from 0 to 10, Y-axis from -1 to 1
 
-yticks(0:0.1:5);
-xticks(0:1:150);
+yticks(0:0.1:1);
+xticks(0:1:max_period);
 
 ST_RFT = compute_ST_RFT(Pq, max_period);
 
 figure;
 plot(1:max_period, abs(ST_RFT), 'k', 'LineWidth', 1.5);
-title('ST-RFT (imaginary/magnitude Part)');
-xlabel('Sample Index');
-ylabel('Amplitude');
+title('ST-RFT', 'FontSize', 17);
+xlabel('Period', 'FontSize', 16);
+ylabel('Amplitude', 'FontSize', 16);
 grid on;
 drawnow;
 
 % Zoom in (adjust the y-axis limits)
-axis([0 150 0 5]);  % X-axis from 0 to 10, Y-axis from -1 to 1
-yticks(0:0.1:5);
-xticks(0:1:150);
+axis([0 max_period 0 11]);  % X-axis from 0 to 10, Y-axis from -1 to 1
+yticks(0:0.5:11);
 
 figure;
 plot(1:max_period, CM, 'k', 'LineWidth', 1.5);
-title('Concentration Measure with Window Size 8');
-xlabel('Sample Index');
-ylabel('Concentration Measure');
+title('Concentration Measure with Window Size 8', 'FontSize', 17);
+xlabel('Sample Index', 'FontSize', 16);
+ylabel('Concentration Measure', 'FontSize', 16);
 grid on;
 
 % Adjust axis for better visualization
-axis([0 150 0 5]);
-yticks(0:0.1:5);
-xticks(0:1:150);
+axis([0 max_period 0 1]);
+yticks(0:0.1:1);
+xticks(0:1:max_period);
+
 
 % Plot ST-RFT magnitude
 figure;
 plot(1:max_period, ST_RFT_mag, 'k', 'LineWidth', 1.5);
 hold on;
 
-% Circle detected hotspots on ST-RFT plot
-plot(peak_locs, peak_vals, '*', 'MarkerSize', 3, 'LineWidth', 2);
+% Blue stars: Detected hotspots
+plot(peak_locs, peak_vals, 'b*', 'MarkerSize', 4, 'LineWidth', 1.5);
 
-% Label the hotspot positions
+% Red stars: True hotspots
+true_hotspots = [30, 34, 38, 51, 55];
+true_vals = ST_RFT_mag(true_hotspots);
+plot(true_hotspots, true_vals, 'r*', 'MarkerSize', 8, 'LineWidth', 2);
+
+% Add text labels for detected peaks
 for i = 1:length(peak_locs)
     text(peak_locs(i), peak_vals(i), sprintf('  %d', peak_locs(i)), ...
         'VerticalAlignment', 'bottom', 'FontSize', 12, 'Color', 'black');
 end
 
-title('ST-RFT Magnitude with Detected Hotspots');
-xlabel('Period');
-ylabel('Amplitude');
+% Add annotation box about true hotspots
+x_box1= 47;
+y_box1= 10;
+text(x_box1, y_box1, 'True hotspots are at positions 30, 34, 38, 51, 55', ...
+     'FontSize', 12, 'BackgroundColor', 'white', 'EdgeColor', 'black', ...
+     'Margin', 5);
+
+
+
+% Add legend
+legend('ST-RFT Magnitude', 'Detected Peaks', 'True Hotspots', ...
+       'Location', 'east');
+
+hold off;
+
+title('ST-RFT Magnitude with Detected Hotspots', 'FontSize', 17);
+xlabel('Period', 'FontSize', 16);
+ylabel('Amplitude', 'FontSize', 16);
 grid on;
 
 
-axis([0 150 0 5]);
-yticks(0:0.1:5);
-xticks(0:1:150);
+axis([0 max_period 0 11]);
+yticks(0:0.1:11);
+xticks(0:1:max_period);
 hold off;
-
